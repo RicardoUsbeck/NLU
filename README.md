@@ -1,11 +1,11 @@
 # Natural Language Understanding
-~ Vorlesung 3: "Algorithmen zur Bestimmung der Levenshtein-Distanz von Zeichenketten"
+## Vorlesung 3: "Algorithmen zur Bestimmung der Levenshtein-Distanz von Zeichenketten"
 
 In dieser Vorlesung gehen wir auf verschiedene Algorithmen zur Berechnung der Levenshtein-Distanz zwischen zwei Strings ein. Dabei lernen wir drei verschiedene Algorithmen zur Berechnung kennen.
 
 Das Colab-Jupyter-Notebook finden Sie unter https://colab.research.google.com/drive/1kZ7BP9OZ9Z2WSTcJrGGKcBpNLBXfWErt#scrollTo=gN78e6up20he&line=1&uniqifier=1 oder als Datei in diesem Repository.
 
-## Selbsttestfragen
+### Selbsttestfragen
 * Schreiben Sie einen korrekten Algorithmus für die Hamming-Distanz (siehe Quellen)!
 * Beweisen Sie dass, editDistanz <= hammingditanz?
 * Geben Sie für zwei String unterschiedlicher Länge den Upper und Lower Bound für die Edit-Distanz an!
@@ -17,7 +17,7 @@ Das Colab-Jupyter-Notebook finden Sie unter https://colab.research.google.com/dr
 * Wir können unterschiedliche Kosten für das Einfügen, Löschen und Ersetzen festlegen. Wir können auch Strafkosten angeben, die davon abhängen, welche Zeichen eingefügt, gelöscht oder ersetzt werden. Bei welchen Szenarien macht das Sinn?
 * Dieser Algorithmus parallelisiert schlecht, aufgrund einer großen Anzahl von Datenabhängigkeiten. Was kann man parallelisieren?
 
-## Quellen
+### Quellen
 * Cormen, T. H., Leiserson, C. E., Rivest, R., and Stein, C. (2017). Algorithmen-Eine Einführung. Walter de Gruyter GmbH and Co KG.
 * Jurasky, D., and Martin, J. H. (2000). Speech and Language Processing: An introduction to natural language Processing. Computational Linguistics and Speech Recognition. Prentice Hall, New Jersey. (https://web.stanford.edu/~jurafsky/slp3/2.pdf)
 * Levenshtein, V. I. (1966, February). Binary codes capable of correcting deletions, insertions, and reversals. In Soviet physics doklady (Vol. 10, No. 8, pp. 707-710).
@@ -27,7 +27,7 @@ Das Colab-Jupyter-Notebook finden Sie unter https://colab.research.google.com/dr
 * https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance\#Python, 21.06.2020 
 
 
-## Lernvideos/Blended Learning
+### Lernvideos/Blended Learning
 * https://www.youtube.com/watch?v=HXNhEYqFo0o, 14.06.2020
 * https://www.youtube.com/watch?v=MiqoA-yF-0M, 19.06.2020 
 * https://www.youtube.com/watch?v=OQ5jsbhAv_M, 19.06.2020
