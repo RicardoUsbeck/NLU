@@ -1,0 +1,1462 @@
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Boadilla}
+\usepackage[utf8x]{inputenc}
+\usepackage{ngerman}
+\usepackage{url}
+\usepackage{enumerate}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usepackage[export]{adjustbox}
+\usepackage[loadonly]{enumitem}
+\usepackage{hyperref}
+\usepackage{ucs}
+\usepackage{comment}
+\usepackage{textpos}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{fontawesome}
+\usepackage{irbookslide} %% remove this style file
+\usepackage{newalg} %% remove this style file
+\usepackage{pstricks,pst-node,pst-plot,pst-tree}
+\hypersetup{colorlinks, linkcolor = black, citecolor = black, filecolor = black, urlcolor = blue} 
+
+\begin{document}
+
+\title[Extensives Beispiel]{Extensives Beispiel zur Bestimmung der Levenshtein-Distanz von Zeichenketten über nicht-speicher-optimierte Matrix}   
+\author[Dr. R. Usbeck]{Dr. Ricardo Usbeck\\\url{https://github.com/RicardoUsbeck/NLU}} 
+\date{16.07.2020}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Exercise}
+\mygreen{\begin{enumerate}
+\item Compute Levenshtein distance matrix for \term{oslo} -- \term{snow}
+\end{enumerate}}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Each cell of Levenshtein matrix}
+
+\bigskip
+
+\begin{tabular}{|l|l|}
+
+\hline
+\parbox{4cm}{cost of getting here from my upper left neighbor (copy or replace)} & \parbox{4cm}{cost of getting here from my upper neighbor (delete)}\\\hline
+\parbox{4cm}{cost of getting here from my left neighbor (insert)} & \parbox{4cm}{the minimum of the three possible   ``movements''; the cheapest way of getting here } \\\hline
+
+\end{tabular}
+\end{frame}
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& & & & \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& & & & \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& & & & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+\end{frame}
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} 1 & 2 \\\hline 2 & ? \end{tabular} & & & \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& & & & \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& & & & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+\end{frame}
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & & & \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& & & & \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& & & & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} 2 & 3 \\\hline 2 & ? \end{tabular} & & \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& & & & \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& & & & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & & \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& & & & \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& & & & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 2 & 4 \\\hline 3 & ? \end{tabular} & \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& & & & \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& & & & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& & & & \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& & & & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline 3 & ? \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& & & & \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& & & & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& & & & \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& & & & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} 1 & 2 \\\hline 3 & ? \end{tabular} & & & \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& & & & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & & & \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& & & & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} 2 & 3 \\\hline 2 & ? \end{tabular} & & \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& & & & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & & \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& & & & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 3 & 3 \\\hline 3 & ? \end{tabular} & \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& & & & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& & & & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} 3 & 4 \\\hline 4 & ? \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& & & & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& & & & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & 2 \\\hline 4 & ? \end{tabular} & & & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & & & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 2 & 3 \\\hline 3 & ? \end{tabular} & & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline 3 & {\bf 2} \end{tabular} & & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 3 & 4 \\\hline 3 & ? \end{tabular} & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} 4 & 4 \\\hline 4 & ? \end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 4} & {\bf 4} \\\hline {\bf 4} & {\bf 4} \end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 4} & {\bf 4} \\\hline {\bf 4} & {\bf 4} \end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& \begin{tabular}{l|l} 4 & 3 \\\hline 5 & ? \end{tabular} & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 4} & {\bf 4} \\\hline {\bf 4} & {\bf 4} \end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& \begin{tabular}{l|l} 4 & {\bf 3} \\\hline 5 & {\bf 3} \end{tabular} & & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 4} & {\bf 4} \\\hline {\bf 4} & {\bf 4} \end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& \begin{tabular}{l|l} 4 & {\bf 3} \\\hline 5 & {\bf 3} \end{tabular} & \begin{tabular}{l|l} 3 & 3 \\\hline 4 & ? \end{tabular} & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 4} & {\bf 4} \\\hline {\bf 4} & {\bf 4} \end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& \begin{tabular}{l|l} 4 & {\bf 3} \\\hline 5 & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline 4 & {\bf 3} \end{tabular} & & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 4} & {\bf 4} \\\hline {\bf 4} & {\bf 4} \end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& \begin{tabular}{l|l} 4 & {\bf 3} \\\hline 5 & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline 4 & {\bf 3} \end{tabular} & \begin{tabular}{l|l} 2 & 4 \\\hline 4 & ? \end{tabular} & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 4} & {\bf 4} \\\hline {\bf 4} & {\bf 4} \end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& \begin{tabular}{l|l} 4 & {\bf 3} \\\hline 5 & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline 4 & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 4 & {\bf 2} \end{tabular} & \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 4} & {\bf 4} \\\hline {\bf 4} & {\bf 4} \end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& \begin{tabular}{l|l} 4 & {\bf 3} \\\hline 5 & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline 4 & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline 3 & ? \end{tabular} \\\hline\hline
+\end{tabular}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 4} & {\bf 4} \\\hline {\bf 4} & {\bf 4} \end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& \begin{tabular}{l|l} 4 & {\bf 3} \\\hline 5 & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline 4 & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+\end{tabular}
+
+
+
+
+\end{frame}
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 4} & {\bf 4} \\\hline {\bf 4} & {\bf 4} \end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& \begin{tabular}{l|l} 4 & {\bf 3} \\\hline 5 & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline 4 & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\huge\bf 3} \end{tabular} \\\hline\hline
+\end{tabular}
+
+
+
+
+\end{frame}
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 4} & {\bf 4} \\\hline {\bf 4} & {\bf 4} \end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& \begin{tabular}{l|l} 4 & {\bf 3} \\\hline 5 & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline 4 & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+\end{tabular}
+
+\bigskip
+
+How do I read out the editing operations that transform
+\term{oslo} into \term{snow}?
+
+\end{frame}
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 4} & {\bf 4} \\\hline {\bf 4} & {\bf 4} \end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& \begin{tabular}{l|l} 4 & {\bf 3} \\\hline 5 & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline 4 & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 4 & {\bf 2} \end{tabular} & \myred{
+\begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} } \\\hline\hline
+\end{tabular}
+
+
+
+\vfill
+
+\bigskip
+
+\begin{tabular}{ll||l|l}
+cost & operation & input & output\\\hline\hline
+1 & insert  &*&w\\\hline
+
+\end{tabular}
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 4} & {\bf 4} \\\hline {\bf 4} & {\bf 4} \end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& \begin{tabular}{l|l} 4 & {\bf 3} \\\hline 5 & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline 4 & {\bf 3} \end{tabular} & \myred{
+\begin{tabular}{l|l} {\bf 2} & 4 \\\hline 4 & {\bf 2} \end{tabular} } & \myred{
+\begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} } \\\hline\hline
+\end{tabular}
+
+
+
+\vfill
+
+\bigskip
+
+\begin{tabular}{ll||l|l}
+cost & operation & input & output\\\hline\hline
+0 & (copy)  &o&o\\\hline
+1 & insert  &*&w\\\hline
+
+\end{tabular}
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \myred{
+\begin{tabular}{l|l} {\bf 2} & 3 \\\hline 3 & {\bf 2} \end{tabular} } & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 4} & {\bf 4} \\\hline {\bf 4} & {\bf 4} \end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& \begin{tabular}{l|l} 4 & {\bf 3} \\\hline 5 & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline 4 & {\bf 3} \end{tabular} & \myred{
+\begin{tabular}{l|l} {\bf 2} & 4 \\\hline 4 & {\bf 2} \end{tabular} } & \myred{
+\begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} } \\\hline\hline
+\end{tabular}
+
+
+
+\vfill
+
+\bigskip
+
+\begin{tabular}{ll||l|l}
+cost & operation & input & output\\\hline\hline
+1 & replace &l&n\\\hline
+0 & (copy)  &o&o\\\hline
+1 & insert  &*&w\\\hline
+
+\end{tabular}
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \myred{
+\begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} } & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \myred{
+\begin{tabular}{l|l} {\bf 2} & 3 \\\hline 3 & {\bf 2} \end{tabular} } & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 4} & {\bf 4} \\\hline {\bf 4} & {\bf 4} \end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& \begin{tabular}{l|l} 4 & {\bf 3} \\\hline 5 & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline 4 & {\bf 3} \end{tabular} & \myred{
+\begin{tabular}{l|l} {\bf 2} & 4 \\\hline 4 & {\bf 2} \end{tabular} } & \myred{
+\begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} } \\\hline\hline
+\end{tabular}
+
+
+
+\vfill
+
+\bigskip
+
+\begin{tabular}{ll||l|l}
+cost & operation & input & output\\\hline\hline
+0 & (copy)  &s&s\\\hline
+1 & replace &l&n\\\hline
+0 & (copy)  &o&o\\\hline
+1 & insert  &*&w\\\hline
+
+\end{tabular}
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[shrink=10]
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & s & n & o & w \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} \\\hline\hline
+o & \myred{
+\begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+}
+& \begin{tabular}{l|l} {\bf 1} & 2 \\\hline 2 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 2} & 4 \\\hline 3 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+s & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \myred{
+\begin{tabular}{l|l} {\bf 1} & 2 \\\hline 3 & {\bf 1} \end{tabular} } & \begin{tabular}{l|l} {\bf 2} & 3 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline 4 & {\bf 3} \end{tabular} \\\hline\hline
+l & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \myred{
+\begin{tabular}{l|l} {\bf 2} & 3 \\\hline 3 & {\bf 2} \end{tabular} } & \begin{tabular}{l|l} {\bf 3} & 4 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 4} & {\bf 4} \\\hline {\bf 4} & {\bf 4} \end{tabular} \\\hline\hline
+o & \begin{tabular}{l|l}&{\bf 4 }\\\hline&{\bf 4 }\end{tabular}
+& \begin{tabular}{l|l} 4 & {\bf 3} \\\hline 5 & {\bf 3} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & {\bf 3} \\\hline 4 & {\bf 3} \end{tabular} & \myred{
+\begin{tabular}{l|l} {\bf 2} & 4 \\\hline 4 & {\bf 2} \end{tabular} } & \myred{
+\begin{tabular}{l|l} 4 & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} } \\\hline\hline
+\end{tabular}
+
+
+
+\vfill
+
+\bigskip
+
+\begin{tabular}{ll||l|l}
+cost & operation & input & output\\\hline\hline
+1 & delete  &o&*\\\hline
+0 & (copy)  &s&s\\\hline
+1 & replace &l&n\\\hline
+0 & (copy)  &o&o\\\hline
+1 & insert  &*&w\\\hline
+
+\end{tabular}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[shrink=15]
+
+\bigskip
+
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & c & a & t & c & a & t \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 5 }&{\bf 5 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 6 }&{\bf 6 }\end{tabular} \\\hline\hline
+c & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 0} & 2 \\\hline 2 & {\bf 0} \end{tabular} & \begin{tabular}{l|l} 2 & 3 \\\hline {\bf 1} & {\bf 1} \end{tabular} & \begin{tabular}{l|l} 3 & 4 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} 5 & 6 \\\hline {\bf 4} & {\bf 4} \end{tabular} & \begin{tabular}{l|l} 6 & 7 \\\hline {\bf 5} & {\bf 5} \end{tabular} \\\hline\hline
+a & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} 2 & {\bf 1} \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 0} & 2 \\\hline 2 & {\bf 0} \end{tabular} & \begin{tabular}{l|l} 2 & 3 \\\hline {\bf 1} & {\bf 1} \end{tabular} & \begin{tabular}{l|l} 3 & 4 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} 5 & 6 \\\hline {\bf 4} & {\bf 4} \end{tabular} \\\hline\hline
+t & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 2 & {\bf 1} \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 0} & 2 \\\hline 2 & {\bf 0} \end{tabular} & \begin{tabular}{l|l} 2 & 3 \\\hline {\bf 1} & {\bf 1} \end{tabular} & \begin{tabular}{l|l} 3 & 4 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} \\\hline\hline
+\end{tabular}
+\end{frame}
+
+
+
+\begin{frame}[shrink=15]
+
+\bigskip
+
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & c & a & t & c & a & t \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\myred{ \begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} } &
+\myred{ \begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} } &
+\myred{ \begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} } &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 5 }&{\bf 5 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 6 }&{\bf 6 }\end{tabular} \\\hline\hline
+c & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \begin{tabular}{l|l} {\bf 0} & 2 \\\hline 2 & {\bf 0} \end{tabular} & \begin{tabular}{l|l} 2 & 3 \\\hline {\bf 1} & {\bf 1} \end{tabular} & \begin{tabular}{l|l} 3 & 4 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \myred{
+\begin{tabular}{l|l} {\bf 3} & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} } & \begin{tabular}{l|l} 5 & 6 \\\hline {\bf 4} & {\bf 4} \end{tabular} & \begin{tabular}{l|l} 6 & 7 \\\hline {\bf 5} & {\bf 5} \end{tabular} \\\hline\hline
+a & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} 2 & {\bf 1} \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 0} & 2 \\\hline 2 & {\bf 0} \end{tabular} & \begin{tabular}{l|l} 2 & 3 \\\hline {\bf 1} & {\bf 1} \end{tabular} & \begin{tabular}{l|l} 3 & 4 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \myred{
+\begin{tabular}{l|l} {\bf 3} & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} } & \begin{tabular}{l|l} 5 & 6 \\\hline {\bf 4} & {\bf 4} \end{tabular} \\\hline\hline
+t & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 2 & {\bf 1} \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 0} & 2 \\\hline 2 & {\bf 0} \end{tabular} & \begin{tabular}{l|l} 2 & 3 \\\hline {\bf 1} & {\bf 1} \end{tabular} & \begin{tabular}{l|l} 3 & 4 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \myred{
+\begin{tabular}{l|l} {\bf 3} & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} } \\\hline\hline
+\end{tabular}
+
+
+
+\vfill
+
+\bigskip
+
+\begin{tabular}{ll||l|l}
+cost & operation & input & output\\\hline\hline
+1 & insert  &*&c\\\hline
+1 & insert  &*&a\\\hline
+1 & insert  &*&t\\\hline
+0 & (copy)  &c&c\\\hline
+0 & (copy)  &a&a\\\hline
+0 & (copy)  &t&t\\\hline
+
+\end{tabular}
+\end{frame}
+
+
+
+
+\begin{frame}[shrink=15]
+
+\bigskip
+
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & c & a & t & c & a & t \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 5 }&{\bf 5 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 6 }&{\bf 6 }\end{tabular} \\\hline\hline
+c & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \myred{
+\begin{tabular}{l|l} {\bf 0} & 2 \\\hline 2 & {\bf 0} \end{tabular} } & \myred{
+\begin{tabular}{l|l} 2 & 3 \\\hline {\bf 1} & {\bf 1} \end{tabular} } & \myred{
+\begin{tabular}{l|l} 3 & 4 \\\hline {\bf 2} & {\bf 2} \end{tabular} } & \myred{
+\begin{tabular}{l|l} {\bf 3} & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} } & \begin{tabular}{l|l} 5 & 6 \\\hline {\bf 4} & {\bf 4} \end{tabular} & \begin{tabular}{l|l} 6 & 7 \\\hline {\bf 5} & {\bf 5} \end{tabular} \\\hline\hline
+a & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} 2 & {\bf 1} \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 0} & 2 \\\hline 2 & {\bf 0} \end{tabular} & \begin{tabular}{l|l} 2 & 3 \\\hline {\bf 1} & {\bf 1} \end{tabular} & \begin{tabular}{l|l} 3 & 4 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \myred{
+\begin{tabular}{l|l} {\bf 3} & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} } & \begin{tabular}{l|l} 5 & 6 \\\hline {\bf 4} & {\bf 4} \end{tabular} \\\hline\hline
+t & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 2 & {\bf 1} \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 0} & 2 \\\hline 2 & {\bf 0} \end{tabular} & \begin{tabular}{l|l} 2 & 3 \\\hline {\bf 1} & {\bf 1} \end{tabular} & \begin{tabular}{l|l} 3 & 4 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \myred{
+\begin{tabular}{l|l} {\bf 3} & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} } \\\hline\hline
+\end{tabular}
+
+
+
+\vfill
+
+\bigskip
+
+\begin{tabular}{ll||l|l}
+cost & operation & input & output\\\hline\hline
+0 & (copy)  &c&c\\\hline
+1 & insert  &*&a\\\hline
+1 & insert  &*&t\\\hline
+1 & insert  &*&c\\\hline
+0 & (copy)  &a&a\\\hline
+0 & (copy)  &t&t\\\hline
+
+\end{tabular}
+\end{frame}
+
+
+
+
+\begin{frame}[shrink=15]
+
+\bigskip
+
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & c & a & t & c & a & t \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 5 }&{\bf 5 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 6 }&{\bf 6 }\end{tabular} \\\hline\hline
+c & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \myred{
+\begin{tabular}{l|l} {\bf 0} & 2 \\\hline 2 & {\bf 0} \end{tabular} } & \begin{tabular}{l|l} 2 & 3 \\\hline {\bf 1} & {\bf 1} \end{tabular} & \begin{tabular}{l|l} 3 & 4 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} 5 & 6 \\\hline {\bf 4} & {\bf 4} \end{tabular} & \begin{tabular}{l|l} 6 & 7 \\\hline {\bf 5} & {\bf 5} \end{tabular} \\\hline\hline
+a & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} 2 & {\bf 1} \\\hline 3 & {\bf 1} \end{tabular} & \myred{
+\begin{tabular}{l|l} {\bf 0} & 2 \\\hline 2 & {\bf 0} \end{tabular} } & \myred{
+\begin{tabular}{l|l} 2 & 3 \\\hline {\bf 1} & {\bf 1} \end{tabular} } & \myred{
+\begin{tabular}{l|l} 3 & 4 \\\hline {\bf 2} & {\bf 2} \end{tabular} } & \myred{
+\begin{tabular}{l|l} {\bf 3} & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} } & \begin{tabular}{l|l} 5 & 6 \\\hline {\bf 4} & {\bf 4} \end{tabular} \\\hline\hline
+t & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 2 & {\bf 1} \\\hline 3 & {\bf 1} \end{tabular} & \begin{tabular}{l|l} {\bf 0} & 2 \\\hline 2 & {\bf 0} \end{tabular} & \begin{tabular}{l|l} 2 & 3 \\\hline {\bf 1} & {\bf 1} \end{tabular} & \begin{tabular}{l|l} 3 & 4 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \myred{
+\begin{tabular}{l|l} {\bf 3} & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} } \\\hline\hline
+\end{tabular}
+
+
+
+\vfill
+
+\bigskip
+
+\begin{tabular}{ll||l|l}
+cost & operation & input & output\\\hline\hline
+0 & (copy)  &c&c\\\hline
+0 & (copy)  &a&a\\\hline
+1 & insert  &*&t\\\hline
+1 & insert  &*&c\\\hline
+1 & insert  &*&a\\\hline
+0 & (copy)  &t&t\\\hline
+
+\end{tabular}
+\end{frame}
+
+\begin{frame}[shrink=15]
+
+\bigskip
+
+\begin{tabular}{ ||c ||c ||c ||c ||c ||c ||c ||c ||}\hline\hline
+& & c & a & t & c & a & t \\\hline\hline
+& \begin{tabular}{l|l}&\\\hline&{\bf 0}\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 1 }&{\bf 1 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 2 }&{\bf 2 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 3 }&{\bf 3 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 4 }&{\bf 4 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 5 }&{\bf 5 }\end{tabular} &
+\begin{tabular}{l|l}&\\\hline{\bf 6 }&{\bf 6 }\end{tabular} \\\hline\hline
+c & \begin{tabular}{l|l}&{\bf 1 }\\\hline&{\bf 1 }\end{tabular}
+& \myred{
+\begin{tabular}{l|l} {\bf 0} & 2 \\\hline 2 & {\bf 0} \end{tabular} } & \begin{tabular}{l|l} 2 & 3 \\\hline {\bf 1} & {\bf 1} \end{tabular} & \begin{tabular}{l|l} 3 & 4 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} 5 & 6 \\\hline {\bf 4} & {\bf 4} \end{tabular} & \begin{tabular}{l|l} 6 & 7 \\\hline {\bf 5} & {\bf 5} \end{tabular} \\\hline\hline
+a & \begin{tabular}{l|l}&{\bf 2 }\\\hline&{\bf 2 }\end{tabular}
+& \begin{tabular}{l|l} 2 & {\bf 1} \\\hline 3 & {\bf 1} \end{tabular} & \myred{
+\begin{tabular}{l|l} {\bf 0} & 2 \\\hline 2 & {\bf 0} \end{tabular} } & \begin{tabular}{l|l} 2 & 3 \\\hline {\bf 1} & {\bf 1} \end{tabular} & \begin{tabular}{l|l} 3 & 4 \\\hline {\bf 2} & {\bf 2} \end{tabular} & \begin{tabular}{l|l} {\bf 3} & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} & \begin{tabular}{l|l} 5 & 6 \\\hline {\bf 4} & {\bf 4} \end{tabular} \\\hline\hline
+t & \begin{tabular}{l|l}&{\bf 3 }\\\hline&{\bf 3 }\end{tabular}
+& \begin{tabular}{l|l} 3 & {\bf 2} \\\hline 4 & {\bf 2} \end{tabular} & \begin{tabular}{l|l} 2 & {\bf 1} \\\hline 3 & {\bf 1} \end{tabular} & \myred{
+\begin{tabular}{l|l} {\bf 0} & 2 \\\hline 2 & {\bf 0} \end{tabular} } & \myred{
+\begin{tabular}{l|l} 2 & 3 \\\hline {\bf 1} & {\bf 1} \end{tabular} } & \myred{
+\begin{tabular}{l|l} 3 & 4 \\\hline {\bf 2} & {\bf 2} \end{tabular} } & \myred{
+\begin{tabular}{l|l} {\bf 3} & 5 \\\hline {\bf 3} & {\bf 3} \end{tabular} } \\\hline\hline
+\end{tabular}
+
+
+
+\vfill
+
+\bigskip
+
+\begin{tabular}{ll||l|l}
+cost & operation & input & output\\\hline\hline
+0 & (copy)  &c&c\\\hline
+0 & (copy)  &a&a\\\hline
+0 & (copy)  &t&t\\\hline
+1 & insert  &*&c\\\hline
+1 & insert  &*&a\\\hline
+1 & insert  &*&t\\\hline
+
+\end{tabular}
+\end{frame}
+\end{document}
